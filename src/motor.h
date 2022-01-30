@@ -1,3 +1,5 @@
+#pragma once
+
 #include <Arduino.h>
 
 typedef enum Direction {
@@ -6,22 +8,23 @@ typedef enum Direction {
 };
 
 class Motor {
-  Motor(byte pwm, byte IN1, byte IN2);
+  uint8_t pwm;
+  uint8_t in1;
+  uint8_t in2;
+
+  byte speed;
+  bool isEngineMoving = false;
+  Direction direction;
+
+  void setDirection(Direction direction);
+  void setIsMoving(bool isMoving);
+
+  public:
+
+  Motor(uint8_t pwm, uint8_t IN1, uint8_t IN2);
 
   bool isMoving();
   void backward();
   void forward();
   void stop();
-
-  private:
-  void setDirection(Direction direction);
-  void setIsMoving(bool isMoving);
-
-  byte pwm;
-  byte in1;
-  byte in2;
-
-  byte speed;
-  bool isEngineMoving = false;
-  Direction direction;
 };
