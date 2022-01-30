@@ -1,0 +1,7 @@
+{
+    "configuration": "cpu=atmega328old",
+    "board": "arduino:avr:nano",
+    "programmer": "arduino:arduinoasispatmega32u4",
+    "port": "/dev/cu.usbserial-2140",
+    "sketch": "src/tests.ino"
+}
