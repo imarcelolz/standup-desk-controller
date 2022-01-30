@@ -1,6 +1,6 @@
 #include "motor.h"
 
-Motor::Motor(uint8_t pwm, uint8_t in1, uint8_t in2) {
+Motor::Motor(byte pwm, byte in1, byte in2) {
   this->pwm = pwm;
   this->in1 = in1;
   this->in2 = in2;
