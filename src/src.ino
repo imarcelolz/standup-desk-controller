@@ -1,57 +1,115 @@
 #include "motor.h"
+#include "switch-reader.h"
 
 #define DI_UP 2
 #define DI_DOWN 3
 
-#define MOTOR_IN1 7
-#define MOTOR_IN2 8
-#define MOTOR_PWM_PORT 9
+#define IN1 8
+#define IN2 7
+#define ENA_PWM 9
 
-Motor motor(MOTOR_PWM_PORT, MOTOR_IN1, MOTOR_IN2);
+#define IN3 5
+#define IN4 4
+#define ENB_PWM 6
 
-volatile byte upState = LOW;
-volatile byte downState = LOW;
+void blink(bool fast = false);
 
-void onUpChange () { upState = !upState; }
-void onUpRaising () { upState = HIGH; }
-void onUpFalling () { upState = LOW; }
-void onDownChange () { downState = !downState; }
+Motor motorA(ENA_PWM, IN1, IN2);
+Motor motorB(ENB_PWM, IN3, IN4);
+
+SwitchReader readDIUp(DI_UP);
+SwitchReader readDIDown(DI_DOWN);
 
 void setup() {
   Serial.begin(9600);
   while(!Serial) { delay(100); }
 
-  pinMode(DI_UP, INPUT_PULLUP);
-  pinMode(DI_DOWN, INPUT_PULLUP);
-
-  // attachInterrupt(digitalPinToInterrupt(DI_UP), onUpChange, CHANGE);
-  attachInterrupt(digitalPinToInterrupt(DI_UP), onUpRaising, RISING);
-  attachInterrupt(digitalPinToInterrupt(DI_UP), onUpFalling, FALLING);
-  // attachInterrupt(digitalPinToInterrupt(DI_DOWN), onDownChange, CHANGE);
-
+  setupMotorSwitch();
   Serial.println("Hello Desk");
 }
 
+byte upState = LOW;
+byte downState = LOW;
+
+int print = 0;
 void loop() {
-  if (!upState && !downState) {
-    // motor.stop();
-    led(LOW);
-    return;
-  }
+  // onUpChange();
 
-  if(upState) {
-    led(HIGH);
-    // motor.forward();
-  }
+  // print++;
+  // Serial.print(digitalRead(DI_UP));
+  // if (print == 100) {
+  //   Serial.println('');
+  //   print = 0;
+  //
 
-  // if(downState) {
-  //   led(HIGH);
-  //   // motor.backward();
+  led(upState == 0 ? HIGH : LOW);
+
+  delay(200);
+
+  // if (state == HIGH) {
+  //   blink(true);
   // }
 
-   delay(10);
+
+  // led(HIGH);
+  // motorA.forward();
+  // motorB.forward();
+
+  // delay(1000);
+  // Serial.println("testing motor a");
+  // testMotor(&motorA);
+
+  // Serial.println("testing motor b");
+  // testMotor(&motorB);
+
+}
+
+void testMotor(Motor* motor) {
+  led(HIGH);
+
+  motor->forward();
+  delay(1000);
+
+  motor->backward();
+  delay(1000);
+
+  motor->stop();
+
+  led(LOW);
+
+  delay(100 * 1000);
+}
+
+void onUpChanged() {
+  upState = readDIUp.read();
+}
+
+void onDownChanged() {
+  downState = readDIDown.read();
+}
+
+void setupMotorSwitch() {
+  pinMode(DI_UP, INPUT_PULLUP);
+  pinMode(DI_DOWN, INPUT_PULLUP);
+
+  attachInterrupt(digitalPinToInterrupt(DI_UP), onUpChanged, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(DI_DOWN), onDownChanged, CHANGE);
 }
 
 void led(uint8_t value) {
   digitalWrite(LED_BUILTIN, value);
+}
+
+void blink(bool fast = false) {
+  int delayInterval = fast ? 100 : 400;
+
+  digitalWrite(LED_BUILTIN, LOW);
+
+  for (int i = 0; i < 10; i++) {
+    byte value = i % 2 == 0 ? HIGH : LOW;
+    digitalWrite(LED_BUILTIN, value);
+    delay(delayInterval);
+  }
+
+  digitalWrite(LED_BUILTIN, LOW);
 }
