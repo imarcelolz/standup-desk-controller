@@ -4,7 +4,7 @@ Motor::Motor(uint8_t pwm, uint8_t in1, uint8_t in2) {
   this->pwm = pwm;
   this->in1 = in1;
   this->in2 = in2;
-  this->speed = 100;
+  this->speed = 255;
 }
 
 bool Motor::isMoving() {

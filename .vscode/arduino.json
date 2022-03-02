@@ -2,6 +2,6 @@
     "sketch": "src/src.ino",
     "configuration": "cpu=atmega328old",
     "board": "arduino:avr:nano",
-    "port": "/dev/cu.usbserial-2140",
+    "port": "/dev/tty.usbserial-1130",
     "programmer": "arduinoasisp"
 }

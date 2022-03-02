@@ -8,60 +8,31 @@
 #define IN2 7
 #define ENA_PWM 9
 
-#define IN3 5
-#define IN4 4
-#define ENB_PWM 6
-
 void blink(bool fast = false);
-
-Motor motorA(ENA_PWM, IN1, IN2);
-Motor motorB(ENB_PWM, IN3, IN4);
-
+void setupSwitches();
+void led(uint8_t);
+Motor motor(ENA_PWM, IN1, IN2);
 SwitchReader readDIUp(DI_UP);
 SwitchReader readDIDown(DI_DOWN);
+bool wakeUp = false;
 
 void setup() {
   Serial.begin(9600);
   while(!Serial) { delay(100); }
 
-  setupMotorSwitch();
+  setupSwitches();
   Serial.println("Hello Desk");
 }
 
-byte upState = LOW;
-byte downState = LOW;
-
-int print = 0;
 void loop() {
-  // onUpChange();
-
-  // print++;
-  // Serial.print(digitalRead(DI_UP));
-  // if (print == 100) {
-  //   Serial.println('');
-  //   print = 0;
-  //
-
-  led(upState == 0 ? HIGH : LOW);
-
-  delay(200);
-
-  // if (state == HIGH) {
-  //   blink(true);
+  // if(!wakeUp) {
+  //   sleep(100);
   // }
 
-
-  // led(HIGH);
-  // motorA.forward();
-  // motorB.forward();
-
-  // delay(1000);
-  // Serial.println("testing motor a");
-  // testMotor(&motorA);
-
-  // Serial.println("testing motor b");
-  // testMotor(&motorB);
-
+  led(readDIUp.getState());
+  led(readDIDown.getState());
+  // delay(200);
+  // wakeUp = false;
 }
 
 void testMotor(Motor* motor) {
@@ -76,19 +47,20 @@ void testMotor(Motor* motor) {
   motor->stop();
 
   led(LOW);
-
-  delay(100 * 1000);
 }
 
 void onUpChanged() {
-  upState = readDIUp.read();
+  readDIUp.onInterruption();
+
+  wakeUp = true;
 }
 
 void onDownChanged() {
-  downState = readDIDown.read();
+  readDIDown.onInterruption();
+  wakeUp = true;
 }
 
-void setupMotorSwitch() {
+void setupSwitches() {
   pinMode(DI_UP, INPUT_PULLUP);
   pinMode(DI_DOWN, INPUT_PULLUP);
 
