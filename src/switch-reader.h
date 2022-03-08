@@ -11,7 +11,7 @@ class SwitchReader {
 
   public:
 
-  SwitchReader(short digitalPort, short readDelay = 5) {
+  SwitchReader(short digitalPort, short readDelay = 50) {
     this->digitalPort = digitalPort;
     this->readDelay = readDelay;
   }
@@ -30,7 +30,7 @@ class SwitchReader {
 
     this->state = this->state == HIGH ? LOW : HIGH;
 
-    this->event();
+    // this->event();
   }
 
   byte previous = LOW;

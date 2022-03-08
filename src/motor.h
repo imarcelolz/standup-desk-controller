@@ -2,29 +2,27 @@
 
 #include <Arduino.h>
 
-typedef enum Direction {
-  BACKWARD = 0,
-  FORWARD = 1
-};
 
 class Motor {
-  uint8_t pwm;
-  uint8_t in1;
-  uint8_t in2;
+  uint8_t pwm_backward;
+  uint8_t init_backward;
+
+  uint8_t pwm_forward;
+  uint8_t init_forward;
 
   byte speed;
   bool isEngineMoving = false;
-  Direction direction;
 
-  void setDirection(Direction direction);
   void setIsMoving(bool isMoving);
+  void enable();
 
   public:
 
-  Motor(uint8_t pwm, uint8_t IN1, uint8_t IN2);
+  Motor(byte speed, uint8_t pwm_backward, uint8_t init_backward, uint8_t pwm_forward, uint8_t init_forward);
 
   bool isMoving();
   void backward();
   void forward();
   void stop();
+  void setSpeed(byte speed);
 };

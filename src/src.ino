@@ -1,72 +1,13 @@
-#include "motor.h"
+#include <BTS7960.h>
 #include "switch-reader.h"
+#include "motor.h"
 
 #define DI_UP 2
 #define DI_DOWN 3
-
-#define IN1 8
-#define IN2 7
-#define ENA_PWM 9
-
-void blink(bool fast = false);
-void setupSwitches();
-void led(uint8_t);
-Motor motor(ENA_PWM, IN1, IN2);
-SwitchReader readDIUp(DI_UP);
-SwitchReader readDIDown(DI_DOWN);
-bool wakeUp = false;
-
-void setup() {
-  Serial.begin(9600);
-  while(!Serial) { delay(100); }
-
-  setupSwitches();
-  Serial.println("Hello Desk");
-}
-
-void loop() {
-  // if(!wakeUp) {
-  //   sleep(100);
-  // }
-
-  led(readDIUp.getState());
-  led(readDIDown.getState());
-  // delay(200);
-  // wakeUp = false;
-}
-
-void testMotor(Motor* motor) {
-  led(HIGH);
-
-  motor->forward();
-  delay(1000);
-
-  motor->backward();
-  delay(1000);
-
-  motor->stop();
-
-  led(LOW);
-}
-
-void onUpChanged() {
-  readDIUp.onInterruption();
-
-  wakeUp = true;
-}
-
-void onDownChanged() {
-  readDIDown.onInterruption();
-  wakeUp = true;
-}
-
-void setupSwitches() {
-  pinMode(DI_UP, INPUT_PULLUP);
-  pinMode(DI_DOWN, INPUT_PULLUP);
-
-  attachInterrupt(digitalPinToInterrupt(DI_UP), onUpChanged, CHANGE);
-  attachInterrupt(digitalPinToInterrupt(DI_DOWN), onDownChanged, CHANGE);
-}
+#define MOTOR_START_UP 5
+#define MOTOR_START_DOWN 7
+#define MOTOR_UP 9
+#define MOTOR_DOWN 10
 
 void led(uint8_t value) {
   digitalWrite(LED_BUILTIN, value);
@@ -84,4 +25,42 @@ void blink(bool fast = false) {
   }
 
   digitalWrite(LED_BUILTIN, LOW);
+}
+
+SwitchReader readDIUp(DI_UP);
+SwitchReader readDIDown(DI_DOWN);
+Motor *motor;
+
+void onUpChanged() {
+  readDIUp.onInterruption();
+}
+
+void onDownChanged() {
+  readDIDown.onInterruption();
+}
+
+void setup() {
+  Serial.begin(9600);
+  while(!Serial) { delay(100); }
+
+  Serial.println("Hello Desk");
+
+  motor = new Motor(170, MOTOR_DOWN, MOTOR_START_DOWN, MOTOR_UP, MOTOR_START_UP);
+
+  pinMode(DI_UP, INPUT_PULLUP);
+  pinMode(DI_DOWN, INPUT_PULLUP);
+
+  attachInterrupt(digitalPinToInterrupt(DI_UP), onUpChanged, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(DI_DOWN), onDownChanged, CHANGE);
+}
+
+void loop() {
+  if(readDIUp.getState() == HIGH) {
+    motor->forward();
+  }
+  else if(readDIDown.getState() == HIGH) {
+    motor->backward();
+  } else {
+    motor->stop();
+  }
 }

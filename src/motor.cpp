@@ -1,10 +1,17 @@
 #include "motor.h"
 
-Motor::Motor(uint8_t pwm, uint8_t in1, uint8_t in2) {
-  this->pwm = pwm;
-  this->in1 = in1;
-  this->in2 = in2;
-  this->speed = 255;
+Motor::Motor(byte speed, uint8_t pwm_backward, uint8_t init_backward, uint8_t pwm_forward, uint8_t init_forward) {
+  this->pwm_backward = pwm_backward;
+  this->init_backward = init_backward;
+  this->pwm_forward = pwm_forward;
+  this->init_forward = init_forward;
+
+  this->speed = speed;
+
+  pinMode(pwm_backward, OUTPUT);
+  pinMode(init_backward, OUTPUT);
+  pinMode(pwm_forward, OUTPUT);
+  pinMode(init_forward, OUTPUT);
 }
 
 bool Motor::isMoving() {
@@ -12,39 +19,46 @@ bool Motor::isMoving() {
 }
 
 void Motor::forward() {
-  if(this->direction == BACKWARD) {
-    this->stop();
+  if(this->isEngineMoving) {
+    analogWrite(this->pwm_backward, LOW);
+    delay(10);
   }
 
-  this->setDirection(FORWARD);
+  this->enable();
   this->setIsMoving(true);
-  analogWrite(this->pwm, this->speed);
+  analogWrite(this->pwm_forward, this->speed);
 }
 
 void Motor::backward() {
-  if(this->direction == FORWARD) {
-    this->stop();
+  if(this->isEngineMoving) {
+    analogWrite(this->pwm_forward, LOW);
+    delay(10);
   }
 
-  this->setDirection(BACKWARD);
+  this->enable();
   this->setIsMoving(true);
-  analogWrite(this->pwm, this->speed);
+  analogWrite(this->pwm_backward, this->speed);
 }
 
 void Motor::stop() {
-  if(!this->isMoving()) {
-    return;
-  }
-
   this->setIsMoving(false);
-  analogWrite(this->pwm, 0);
-}
 
-void Motor::setDirection(Direction direction) {
-  digitalWrite(this->in1, direction == FORWARD ? HIGH : LOW);
-  digitalWrite(this->in2, direction == FORWARD ? LOW : HIGH);
+  analogWrite(this->pwm_backward, LOW);
+  digitalWrite(this->init_backward, LOW);
+  analogWrite(this->pwm_forward, LOW);
+  digitalWrite(this->init_forward, LOW);
+  delay(10);
 }
 
 void Motor::setIsMoving(bool isMoving) {
   this->isEngineMoving = isMoving;
+}
+
+void Motor::enable() {
+  digitalWrite(this->init_backward, HIGH);
+  digitalWrite(this->init_forward, HIGH);
+}
+
+void Motor::setSpeed(byte speed) {
+  this->speed = speed;
 }
