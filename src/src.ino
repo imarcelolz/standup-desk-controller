@@ -1,4 +1,4 @@
-#include <BTS7960.h>
+#include "LowPower.h"
 #include "switch-reader.h"
 #include "motor.h"
 
@@ -30,13 +30,17 @@ void blink(bool fast = false) {
 SwitchReader readDIUp(DI_UP);
 SwitchReader readDIDown(DI_DOWN);
 Motor *motor;
+short sleepAfter = 5000;
+int lastInterruption = 0;
 
 void onUpChanged() {
   readDIUp.onInterruption();
+  lastInterruption = millis();
 }
 
 void onDownChanged() {
   readDIDown.onInterruption();
+  lastInterruption = millis();
 }
 
 void setup() {
@@ -55,12 +59,21 @@ void setup() {
 }
 
 void loop() {
-  if(readDIUp.getState() == HIGH) {
+  if (readDIUp.getState() == HIGH) {
     motor->forward();
   }
-  else if(readDIDown.getState() == HIGH) {
+  else if (readDIDown.getState() == HIGH) {
     motor->backward();
   } else {
     motor->stop();
   }
+
+  int now = millis();
+  if (now - lastInterruption < sleepAfter) {
+    return;
+  }
+
+  Serial.println("Going to bed, bye!");
+  blink(true);
+  LowPower.powerDown(SLEEP_FOREVER, ADC_OFF, BOD_OFF);
 }
